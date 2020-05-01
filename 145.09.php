@@ -3,7 +3,7 @@
 	// echo "<!-- $PHP_SELF -->\n";
 	$FREQUENCY = '145.09mHz';
 	// Refresh every 10 minutes
-	$REFRESH_SECONDS = '600';
+	$REFRESH_SECONDS = '15';
 	// Just refresh to self
 	$REFRESH_URL     = $PHP_SELF;
 	// Initial values
@@ -94,7 +94,7 @@
         	width: '95%',
         	height: '65%',
         	legend: { position: 'top', maxLines: 5 },
-        	bar: { groupWidth: '70%' },
+        	bar: { groupWidth: '70%' }, /* 70% */
         	isStacked: true,
 			/* vAxis: { scaleType: 'log'}, */ 
         	'title':'Packet activity on <?php echo $FREQUENCY; ?> (in bytes per hour)'
@@ -111,6 +111,8 @@
 
         // Draw the dashboard.
         dashboard.draw(data);
+		// Adjust 'barWidth'
+		selectControl()
 
 		function selectControl(e) {
 			var cs = dateRangeSlider.getState()
@@ -123,6 +125,18 @@
 			var he = encodeURI(high).trim('\'')
 			s = "<?php echo $REFRESH_SECONDS; ?>; url='<?php echo $REFRESH_URL; ?>?low=%27"+le+"%27&high=%27"+he+"%27'"
 			e.content = s
+			/* Ad-hoc-ery: Adjust certain range otherwise the bar widths get wonky */
+			var d1 = Date.parse(new Date(low))
+			var d2 = Date.parse(new Date(high))
+			var days = 24 * 60 * 60 * 1000
+			var barWidth = '70%'
+			if ((d2-d1) > (days * 7) && (d2-d1) < (days * 11)) {
+				barWidth = '30%'
+			}
+			if ((d2-d1) > (days * 8) && (d2-d1) < (days * 11)) {
+				barWidth = '40%'
+			}
+			packetChart.setOption('bar.groupWidth', barWidth)
 		}
 
       }
