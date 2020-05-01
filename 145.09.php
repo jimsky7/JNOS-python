@@ -154,7 +154,7 @@
 					&nbsp;Use the sliders to select a date range. // Page reloads automatically every <?php echo intval($REFRESH_SECONDS/60); ?> minutes. // &nbsp;Resize the window and reload the page to change the chart size. 
 					<br/>
 					&nbsp;&nbsp;*Callsigns marked with an asterisk were not heard, although a BBS or other station 
-					we <u>did</u> hear was communicating with them.
+					we <u>did</u> hear was communicating with them. "_CALLSIGN(BBS,packet count)"
 				</span>
 				<div id='DATE_TIME' style="height:25%; font-weight:bold; margin-bottom:4px;">
 				</div>

@@ -129,6 +129,7 @@ try:
     callsigns   = {}
     # Callsigns transmitted TO, but not heard yet
     callsignssilent = {}
+    callsignssilentcount = {}
     sw = FALSE
     rec = {"date":"date", "time_struct":"time_struct", "seconds":"unixtime", "ax25":"FROM->TO"}
     print("Limit: {} lines".format(n))
@@ -163,14 +164,22 @@ try:
                     # cs[1] is the TO callsign
                     if (callsigns.get(cs[1], None) != None):
                         # TO callsign has already been heard
-                        callsignssilent.pop(cs[1], None)
+                        try:
+                            callsignssilent.pop(cs[1], None)
+                            callsignssilentcount.pop(cs[1], None)
+                        except KeyError:
+                            if (DEBUG):
+                                print("KeyError [1]")
                     else:
                         # TO callsign has not transmitted yet
                         try:
-                            callsignssilent[cs[1]] = callsignssilent[cs[1]] - 1
+                            callsignssilentcount[cs[1]] = callsignssilentcount[cs[1]] - 1
+                            callsignssilent[cs[1]] = cs[0]
                         except:
                             # No problem
-                            callsignssilent[cs[1]] = -1
+                            callsignssilentcount[cs[1]] = -1
+                            callsignssilent[cs[1]] = cs[0]
+
                         
                 # print("cs[0]:{} byteCount:{} total this call: {}".format(cs[0], byteCount,bucketCalls[cs[0]]))
                 # print(rec["date"])
@@ -246,7 +255,7 @@ try:
     #  were sent to.
     # Add the 'unheard' callsigns to the legend with special notation
     for callsign in callsignssilent:
-        callsigns["_"+callsign+"*"] = callsignssilent[callsign]
+        callsigns["_{}* ({},{})".format(callsign, (callsignssilent[callsign]), (-callsignssilentcount[callsign]))] = callsignssilent[callsign]
     # Make an alphabetical callsign list
     callsignlist = list(callsigns)
     list.sort(callsignlist)
