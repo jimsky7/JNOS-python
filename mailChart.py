@@ -103,9 +103,6 @@ except:
     print('Can\'t set up log file {}. Maybe permissions?'.format(filen))
     # NOTE: Continue even if no log was set up.
 
-if (DEBUG):
-    exit(0)
-    
 #   Convert a time+date string into seconds
 #   seconds = time.strptime(string)
 #   Convert seconds into string
@@ -128,7 +125,10 @@ try:
     bucketMinute= 0
     bucketCalls = {}
     buckets     = {}
-    callsigns = {}
+    # All callsigns that transmitted
+    callsigns   = {}
+    # Callsigns transmitted TO, but not heard yet
+    callsignssilent = {}
     sw = FALSE
     rec = {"date":"date", "time_struct":"time_struct", "seconds":"unixtime", "ax25":"FROM->TO"}
     print("Limit: {} lines".format(n))
@@ -151,6 +151,7 @@ try:
                     ts = "year","month","day","hour","minute","second"
                 cs = rec["ax25"].split("->")
                 if (i>1):
+                    # cs[0] is the transmitting callsign
                     try:
                         callsigns[cs[0]] = callsigns[cs[0]] + byteCount
                     except:
@@ -159,7 +160,19 @@ try:
                         bucketCalls[cs[0]] = bucketCalls[cs[0]] + byteCount
                     except:
                         bucketCalls[cs[0]] = byteCount
-                    # print("cs[0]:{} byteCount:{} total this call: {}".format(cs[0], byteCount,bucketCalls[cs[0]]))
+                    # cs[1] is the TO callsign
+                    if (callsigns.get(cs[1], None) != None):
+                        # TO callsign has already been heard
+                        callsignssilent.pop(cs[1], None)
+                    else:
+                        # TO callsign has not transmitted yet
+                        try:
+                            callsignssilent[cs[1]] = callsignssilent[cs[1]] - 1
+                        except:
+                            # No problem
+                            callsignssilent[cs[1]] = -1
+                        
+                # print("cs[0]:{} byteCount:{} total this call: {}".format(cs[0], byteCount,bucketCalls[cs[0]]))
                 # print(rec["date"])
                 fo.writelines("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t'{}'\t'{}'\t{}\n".format(rec["date"], ts[0], ts[1], ts[2], ts[3], ts[4], ts[5], rec["seconds"], cs[0], cs[1], byteCount))
                 # If end of bucket
@@ -229,6 +242,11 @@ try:
     s = '["Date" '
     # 'callsigns' is a dictionary containing callsigns and their bytecounts
     # 'callsignlist' is alphabetical list of callsigns
+    # 'callsignssilent' is a dictionary of callsigns 'not heard' but which
+    #  were sent to.
+    # Add the 'unheard' callsigns to the legend with special notation
+    for callsign in callsignssilent:
+        callsigns["_"+callsign+"*"] = callsignssilent[callsign]
     # Make an alphabetical callsign list
     callsignlist = list(callsigns)
     list.sort(callsignlist)

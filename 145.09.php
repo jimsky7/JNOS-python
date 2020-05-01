@@ -147,11 +147,14 @@
 	<body>
 		<!--Div that will hold the dashboard-->
 		<div id="dashboard_div" style="height:95%;">
-			<div style="font-family:sans-serif; color:darkgrey; height:12%; margin-bottom:10px;">
+			<div style="font-family:sans-serif; color:darkgrey; height:14%; margin-bottom:10px;">
 				<p style="margin-bottom:8px;">
 				<b>Packet radio traffic on <?php echo $FREQUENCY; ?></b><br/>
-				<span style="font-size:10pt; ">&nbsp;&nbsp;(New data every hour. // 
-					&nbsp;Use the sliders to select a date range. // Page reloads automatically every <?php echo intval($REFRESH_SECONDS/60); ?> minutes. // &nbsp;Resize the window and reload the page to change the chart size.) 
+				<span style="font-size:10pt; ">&nbsp;&nbsp;New data every hour. // 
+					&nbsp;Use the sliders to select a date range. // Page reloads automatically every <?php echo intval($REFRESH_SECONDS/60); ?> minutes. // &nbsp;Resize the window and reload the page to change the chart size. 
+					<br/>
+					&nbsp;&nbsp;*Callsigns marked with an asterisk were not heard, although a BBS or other station 
+					we <u>did</u> hear was communicating with them.
 				</span>
 				<div id='DATE_TIME' style="height:25%; font-weight:bold; margin-bottom:4px;">
 				</div>
