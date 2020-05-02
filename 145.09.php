@@ -1,10 +1,39 @@
 <?php
-    /* 145.09.php */
+
+	/****
+		This PHP script creates a page that contains a Google Chart showing packet radio
+		log data over a time period.
+
+		The Python script mailChart.py runs somewhere and creates the javascript data
+		table that Google Chart is going to read. That javascript is saved in a file on
+		the web server, and we use PHP's include() here to bring it into the table
+		(a google.visualization.arrayToDataTable() structure).
+
+		It makes a bar chart with time on the horizontal axis, and there's a 'filter'
+		control that selects the 'low' and the 'high' dates that set boundaries on what's
+		displayed (in real time, in that if you move the sliders on the control, the 
+		chart will respond immediately).
+
+		There's one glitch, which is that with certain sizes of date ranges the bars
+		will overlap -- this seems to me to be an error -- so I've written a little code
+		here to try to adjust, but it's imperfect.
+
+		The analysis program (mailChart.py) not only reports the number of bytes each
+		station sends during the logged time period, but it looks for callsigns in the
+		'TO' of packets that it hasn't actually heard transmit. (This happens when
+		stations are outside your range and too weak for the TNC to decode, consequently
+		you never hear them transmit on your chosen channel.) These are added to the
+		chart legend (only, not to the stats). This needs some attention at a future
+		time...the number that appears for each of these stations is the number of
+		-packets-, not bytes, that were addressed to those unheard stations. 
+
+	****/
+
 	$PHP_SELF = $_SERVER['PHP_SELF'];
 	// echo "<!-- $PHP_SELF -->\n";
 	$FREQUENCY = '145.09mHz';
-	// Refresh every 10 minutes
-	$REFRESH_SECONDS = '600';
+	// Refresh periodically
+	$REFRESH_SECONDS = '300';
 	// Just refresh to self
 	$REFRESH_URL     = $PHP_SELF;
 	// Initial values
@@ -25,7 +54,7 @@
 	<head>
 		<?php
 			$content = $REFRESH_SECONDS;
-			if($low != '' && $high != '') {
+			if(($low != '') && ($high != '')) {
 				# Encode for URL
 				$le  = str_replace('%27','',$low);
 				$le  = trim($le, '\'');
@@ -112,8 +141,10 @@
 	
 	    	// Draw the dashboard.
 	    	dashboard.draw(data);
-	    	// Adjust 'barWidth'
-	    	selectControl()
+	    	
+			// Adjust 'barWidth' : actually, don't adjust on first draw of the page,
+			//   only adjust when user selects a different date range.
+	    	// selectControl()
 	
 			function selectControl(e) {
 				var cs = dateRangeSlider.getState()
