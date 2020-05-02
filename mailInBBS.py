@@ -211,6 +211,7 @@ pLines = s.strip("\r").split("\n")
 for line in pLines:
     if (line.startswith("[")):
         BBS_TYPE = line.strip("\n")
+        BBS_TYPE = BBS_TYPE.strip("\r")
         break
 ss = "BBS type {}".format(BBS_TYPE)
 print(ss)
