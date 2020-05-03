@@ -269,7 +269,10 @@ try:
         print(s)
     # Create subsequent rows for the chart (done by date)
     # 'buckets' contains data, one hour per bucket
-    for bucket in buckets:
+    # Note: sorted() result is sorted by key, which means date in this case.
+    #   It's not necessary (Google Charts can take the data in any order), but
+    #   is easier to read when debugging or verifying by human.
+    for bucket in sorted(buckets):
         byteCount = 0
         # print("{} » {}".format(bucket, buckets[bucket]))
         # print(bucket)
