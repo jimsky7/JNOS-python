@@ -1,0 +1,236 @@
+
+<html>
+	<head>
+		<style>
+			.ICS_213 {
+				color: 				#303030;
+				font-family: 		sans-serif;
+			}
+			.ICS_213A {
+				color:	purple;
+			}
+			.HEADER_1 {
+				background-color:	#D0D0D0;
+				width: 				100%;
+				border: 			thin; 
+				border-width: 		1px;
+				margin-bottom: 		4px;
+				font-weight: 		bold;
+			}
+			.HEADER_2 {
+				background-color:	#D0D0D0;
+				width: 				100%;
+				border: 			thin; 
+				border-width: 		1px;
+				margin-bottom: 		4px;
+			}
+			.CELL {
+				padding: 			5px;
+			}
+			.CELL_WIDE, .INPUT_WIDE {
+				width: 				100%;
+			}
+			.CELL_SMALL, .INPUT_SMALL {
+				font-size: 			8pt;
+			}
+			.CELL_BORDER, .INPUT_BORDER {
+				border-bottom: 		solid; 
+				border-bottom-width:1px;
+			}
+			.CHECKBOXES {
+				font-size: 			8pt;
+			}
+			.INPUT_TEXT {
+			}
+			.INPUT_TEXTAREA {
+				background-color:	lightblue;
+			}
+			.HIGHLIGHT {
+				background-color:	lightblue;
+			}
+			.SUBMIT_BUTTON {
+				background-color: 	lightblue;
+				color:				darkblue;
+				font-weight:		bold;
+			}
+		</style>
+	</head>
+	<body>
+		<FORM class="ICS_213" action="http://127.0.0.1:8081/ICS-213.py" 
+				method="GET"
+				onsubmit="return confirm('Ready to send?');">
+			<table style ="width:90%; margin: 10px; border:thin; border-width:1px; border-style:solid;">
+				
+<!-- HEADER -->
+				<tr>
+					<td colspan="6" class="CELL HEADER_1">ACS GENERAL MESSAGE FORM 213 <span class="CELL_SMALL ICS_213A">(and 213A)</span>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="6" class="CELL CELL_BORDER HIGHLIGHT">
+						<div style="display:inline-block;">
+							Packet&nbsp;message&nbsp;to&nbsp;<span class="CELL_SMALL">(callsign@BBS)</span>:
+							<INPUT name="PACKET_TO" style="text-transform:uppercase;" size="30" />
+						</div>
+					</td>
+				</tr>
+
+<!-- TO/FROM -->
+				<tr>
+					<td colspan="2" class="CELL">
+						<div style="display:inline-block;">
+							TO:&nbsp;<INPUT name="TO" size="30" />
+						</div>
+					</td>
+					<td colspan="4" class="CELL">
+						<div style="display:inline-block;">
+							LOCATION:&nbsp;<INPUT name="TO_LOCATION" size="30" />
+						</div>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="2" class="CELL CELL_BORDER">
+						FROM:&nbsp;<INPUT name="FROM" size="30" />
+					</td>
+					<td colspan="4" class="CELL CELL_BORDER">
+						LOCATION:&nbsp;<INPUT name="FROM_LOCATION" size="30" />	
+					</td>
+				</tr>
+				
+<!-- SUBJECT (213A) ORIGINAL/REPLY -->
+				<tr style="ICS_213A">
+					<td colspan="3" class="CELL CELL_BORDER">
+						SUBJECT:&nbsp;<INPUT name="SUBJECT" size="40" /> <span class="CELL_SMALL ICS_213A">(213A)</span>
+					</td>
+					<td colspan="3" class="CELL CELL_BORDER">
+ 							<span class="CELL_SMALL ICS_213A">(213A)&nbsp;</span>
+							<INPUT type="checkbox" name="CHECK_ORIGINAL">&nbsp;Original
+							<INPUT type="checkbox" name="CHECK_REPLY">&nbsp;Reply 
+					</td>
+				</tr>
+				
+<!-- DESCRIPTION CHECKBOXES (213A) -->
+				<tr style="ICS_213A">
+					<td colspan="6" class="CELL CELL_BORDER">
+ 							<span class="CELL_SMALL ICS_213A">(213A)&nbsp;</span>
+							<INPUT type="checkbox" name="CHECK_FIREHAZMAT">&nbsp;FIRE or HAZMAT
+							<INPUT type="checkbox" name="CHECK_MEDICAL">&nbsp;MEDICAL 
+							<INPUT type="checkbox" name="CHECK_RESCUE">&nbsp;RESCUE 
+							<INPUT type="checkbox" name="CHECK_INFRASTRUCTURE">&nbsp;INFRASTRUCTURE 
+							<INPUT type="checkbox" name="CHECK_OTHER">&nbsp;OTHER 
+					</td>
+				</tr>
+				<tr style="ICS_213A">
+					<td colspan="6" class="CELL CELL_BORDER">
+ 						<span class="CELL_SMALL ICS_213A">(213A)&nbsp;</span>
+						Incident Address:&nbsp;<INPUT name="INCIDENT_ADDRESS" size="30" />
+						Cross Street:&nbsp;<INPUT name="INCIDENT_CROSSSTREET" size="20" />
+					</td>
+				</tr>
+				
+<!-- MESSAGE -->
+				<tr>
+					<td class="CELL">MESSAGE #:<INPUT name="MSG_NUMBER" /></td>
+					<td colspan="2" class="CHECKBOXES CELL_SMALL">
+							<div style="display:inline-block;">
+								<INPUT type="checkbox" name="CHECK_EMERGENCY">&nbsp;EMERGENCY
+							</div>
+							<div style="display:inline-block;">
+								<INPUT type="checkbox" name="CHECK_PRIORITY">&nbsp;PRIORITY 
+							</div>
+							<div style="display:inline-block;">
+								<INPUT type="checkbox" name="CHECK_ROUTINE">&nbsp;ROUTINE
+							</div>
+							<div style="display:inline-block;">
+								<INPUT type="checkbox" name="CHECK_REPLY_REQUIRED">&nbsp;REPLY&nbsp;REQUIRED
+							</div>
+							<div style="display:inline-block;">
+								<INPUT type="checkbox" name="CHECK_REPLY_NOT_NEEDED">&nbsp;REPLY&nbsp;NOT&nbsp;NEEDED 
+							</div>
+					</td>
+					<td>DATE:<br/><INPUT type="date" name="DATE" /></td>
+					<td>TIME:<br/><INPUT type="time" name="TIME" /></td>
+				</tr>
+
+				<tr><td colspan="6" class="CELL HEADER_2">MESSAGE:</td></tr>
+				<tr>
+					<td colspan="6" class="CELL CELL_WIDE">
+						<textarea name="MESSAGE" class="INPUT_WIDE INPUT_BORDER INPUT_TEXTAREA" rows="4"></textarea>
+					</td>
+				</tr>
+	
+<!-- MESSAGE SIGNATURES -->
+				<tr>
+					<td colspan="3" class="CELL">
+						SIGNATURE:<INPUT name="SIGNATURE" />
+						&nbsp;POSITION:<INPUT name="POSITION" />
+					</td>
+					<td colspan="3" class="CELL" valign="top">
+						<span class="CELL_SMALL ICS_213A">(213A)</span>
+						<div style="display:inline-block;">
+							<INPUT type="checkbox" name="CHECK_REPLY_REQ">&nbsp;Reply&nbsp;Req'd
+						</div>
+						<div style="display:inline-block;">
+							<INPUT type="checkbox" name="CHECK_REPLY">&nbsp;Info&nbsp;Only
+						</div> 
+					</td>
+				</tr>
+
+				<tr>
+					<td colspan="6" class="CELL CELL_SMALL">
+						<div style="margin-bottom:6px;">
+							SENT/REC'D&nbsp;DATE/TIME:<INPUT name="DATE_TIME" type="datetime-local" />
+						</div>
+						&nbsp;FCC&nbsp;CALLSIGN:<INPUT name="CALLSIGN"  style="text-transform:uppercase;" />
+						&nbsp;TACTICAL&nbsp;CALLSIGN:<INPUT name="TACTICAL" style="text-transform:uppercase;"/>
+					</td>
+				</tr>
+
+<!-- REPLY -->
+				<tr>
+					<td colspan="6" class="CELL HEADER_2">
+						REPLY:
+						&nbsp;Ref&nbsp;Msg&nbsp;#&nbsp;<INPUT name="REF_MSG_NUMBER" />
+					</td>
+				</tr>
+				<tr>
+					<td colspan="6" class="CELL CELL_WIDE">
+						<textarea name="REPLY" class="INPUT_WIDE INPUT_BORDER INPUT_TEXTAREA" rows="4"></textarea>
+					</td>
+				</tr>
+
+<!-- REPLY SIGNATURES -->
+				<tr>
+					<td colspan="6" class="CELL">
+						&nbsp;SIGNATURE:<INPUT name="REPLY_SIGNATURE" />
+						&nbsp;POSITION:<INPUT name="REPLY_POSITION" />
+					</td>
+				</tr>
+
+				<tr>
+					<td colspan="6" class="CELL CELL_SMALL">
+						<div style="margin-bottom:6px;">
+							SENT/REC'D&nbsp;DATE/TIME:<INPUT name="REPLY_DATE_TIME" type="datetime-local" />
+						</div>
+						&nbsp;FCC&nbsp;CALLSIGN:<INPUT name="REPLY_CALLSIGN" style="text-transform:uppercase;" />
+						&nbsp;TACTICAL&nbsp;CALLSIGN:<INPUT name="REPLY_TACTICAL" style="text-transform:uppercase;" />
+					</td>
+				</tr>
+
+<!-- SUBMIT BUTTON -->
+				<tr>
+					<td colspan="6">
+						<INPUT class="SUBMIT_BUTTON" name="SUBMIT" 
+							id="SUBMIT" type="submit" 
+							value="SEND" 
+						/>
+					</td>
+				</tr>
+
+			</table>
+		</FORM>
+	</body>
+</html>
+
