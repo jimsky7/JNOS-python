@@ -1,64 +1,14 @@
-
 <html>
 	<head>
-		<style>
-			.ICS_213 {
-				color: 				#303030;
-				font-family: 		sans-serif;
-			}
-			.ICS_213A {
-				color:	purple;
-			}
-			.HEADER_1 {
-				background-color:	#D0D0D0;
-				width: 				100%;
-				border: 			thin; 
-				border-width: 		1px;
-				margin-bottom: 		4px;
-				font-weight: 		bold;
-			}
-			.HEADER_2 {
-				background-color:	#D0D0D0;
-				width: 				100%;
-				border: 			thin; 
-				border-width: 		1px;
-				margin-bottom: 		4px;
-			}
-			.CELL {
-				padding: 			5px;
-			}
-			.CELL_WIDE, .INPUT_WIDE {
-				width: 				100%;
-			}
-			.CELL_SMALL, .INPUT_SMALL {
-				font-size: 			8pt;
-			}
-			.CELL_BORDER, .INPUT_BORDER {
-				border-bottom: 		solid; 
-				border-bottom-width:1px;
-			}
-			.CHECKBOXES {
-				font-size: 			8pt;
-			}
-			.INPUT_TEXT {
-			}
-			.INPUT_TEXTAREA {
-				background-color:	lightblue;
-			}
-			.HIGHLIGHT {
-				background-color:	lightblue;
-			}
-			.SUBMIT_BUTTON {
-				background-color: 	lightblue;
-				color:				darkblue;
-				font-weight:		bold;
-			}
-		</style>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+		<link href="ICS-213.css" rel="stylesheet" type="text/css">
+		<script type="text/javascript" src="ICS-213.js"></script>
 	</head>
 	<body>
-		<FORM class="ICS_213" action="http://127.0.0.1:8081/ICS-213.py" 
-				method="GET"
-				onsubmit="return confirm('Ready to send?');">
+		<FORM class="ICS_213" id="FORM_213" action="mailto:aa6ax@aa6ax" 
+				method="POST"
+				onsubmit="return makePacket();"
+		>
 			<table style ="width:90%; margin: 10px; border:thin; border-width:1px; border-style:solid;">
 				
 <!-- HEADER -->
@@ -106,8 +56,8 @@
 					</td>
 					<td colspan="3" class="CELL CELL_BORDER">
  							<span class="CELL_SMALL ICS_213A">(213A)&nbsp;</span>
-							<INPUT type="checkbox" name="CHECK_ORIGINAL">&nbsp;Original
-							<INPUT type="checkbox" name="CHECK_REPLY">&nbsp;Reply 
+							<INPUT type="radio" name="ORIGINAL_OR_REPLY" value="Original" checked>&nbsp;Original
+							<INPUT type="radio" name="ORIGINAL_OR_REPLY" value="Reply"           >&nbsp;Reply 
 					</td>
 				</tr>
 				
@@ -115,18 +65,18 @@
 				<tr style="ICS_213A">
 					<td colspan="6" class="CELL CELL_BORDER">
  							<span class="CELL_SMALL ICS_213A">(213A)&nbsp;</span>
-							<INPUT type="checkbox" name="CHECK_FIREHAZMAT">&nbsp;FIRE or HAZMAT
-							<INPUT type="checkbox" name="CHECK_MEDICAL">&nbsp;MEDICAL 
-							<INPUT type="checkbox" name="CHECK_RESCUE">&nbsp;RESCUE 
-							<INPUT type="checkbox" name="CHECK_INFRASTRUCTURE">&nbsp;INFRASTRUCTURE 
-							<INPUT type="checkbox" name="CHECK_OTHER">&nbsp;OTHER 
+							<INPUT type="checkbox" name="FIRE_OR_HAZMAT">&nbsp;FIRE or HAZMAT
+							<INPUT type="checkbox" name="MEDICAL">&nbsp;MEDICAL 
+							<INPUT type="checkbox" name="RESCUE">&nbsp;RESCUE 
+							<INPUT type="checkbox" name="INFRASTRUCTURE">&nbsp;INFRASTRUCTURE 
+							<INPUT type="checkbox" name="OTHER">&nbsp;OTHER 
 					</td>
 				</tr>
 				<tr style="ICS_213A">
 					<td colspan="6" class="CELL CELL_BORDER">
  						<span class="CELL_SMALL ICS_213A">(213A)&nbsp;</span>
 						Incident Address:&nbsp;<INPUT name="INCIDENT_ADDRESS" size="30" />
-						Cross Street:&nbsp;<INPUT name="INCIDENT_CROSSSTREET" size="20" />
+						Cross Street:&nbsp;<INPUT name="CROSS_STREET" size="20" />
 					</td>
 				</tr>
 				
@@ -135,19 +85,13 @@
 					<td class="CELL">MESSAGE #:<INPUT name="MSG_NUMBER" /></td>
 					<td colspan="2" class="CHECKBOXES CELL_SMALL">
 							<div style="display:inline-block;">
-								<INPUT type="checkbox" name="CHECK_EMERGENCY">&nbsp;EMERGENCY
+								<INPUT type="radio"    name="PRIORITY" value="Emergency"    >&nbsp;EMERGENCY
+								<INPUT type="radio" name="PRIORITY" value="Priority"        >&nbsp;PRIORITY 
+								<INPUT type="radio" name="PRIORITY" value="Routine"  checked>&nbsp;ROUTINE
 							</div>
 							<div style="display:inline-block;">
-								<INPUT type="checkbox" name="CHECK_PRIORITY">&nbsp;PRIORITY 
-							</div>
-							<div style="display:inline-block;">
-								<INPUT type="checkbox" name="CHECK_ROUTINE">&nbsp;ROUTINE
-							</div>
-							<div style="display:inline-block;">
-								<INPUT type="checkbox" name="CHECK_REPLY_REQUIRED">&nbsp;REPLY&nbsp;REQUIRED
-							</div>
-							<div style="display:inline-block;">
-								<INPUT type="checkbox" name="CHECK_REPLY_NOT_NEEDED">&nbsp;REPLY&nbsp;NOT&nbsp;NEEDED 
+								<INPUT type="radio" name="REPLY_REQUIRED" value="Required"            >&nbsp;REPLY&nbsp;REQUIRED
+								<INPUT type="radio" name="REPLY_REQUIRED" value="Not Required" checked>&nbsp;REPLY&nbsp;NOT&nbsp;NEEDED 
 							</div>
 					</td>
 					<td>DATE:<br/><INPUT type="date" name="DATE" /></td>
@@ -168,20 +112,22 @@
 						&nbsp;POSITION:<INPUT name="POSITION" />
 					</td>
 					<td colspan="3" class="CELL" valign="top">
-						<span class="CELL_SMALL ICS_213A">(213A)</span>
-						<div style="display:inline-block;">
-							<INPUT type="checkbox" name="CHECK_REPLY_REQ">&nbsp;Reply&nbsp;Req'd
-						</div>
-						<div style="display:inline-block;">
-							<INPUT type="checkbox" name="CHECK_REPLY">&nbsp;Info&nbsp;Only
-						</div> 
+						<!-- /**** Omit in favor of Original/Reply above ****/
+							<span class="CELL_SMALL ICS_213A">(213A)</span>
+							<div style="display:inline-block;">
+								<INPUT type="checkbox" name="REPLY_REQ">&nbsp;Reply&nbsp;Req'd
+							</div>
+							<div style="display:inline-block;">
+								<INPUT type="checkbox" name="REPLY">&nbsp;Info&nbsp;Only
+							</div>
+						--> 
 					</td>
 				</tr>
 
 				<tr>
 					<td colspan="6" class="CELL CELL_SMALL">
 						<div style="margin-bottom:6px;">
-							SENT/REC'D&nbsp;DATE/TIME:<INPUT name="DATE_TIME" type="datetime-local" />
+							SENT/REC'D&nbsp;DATE/TIME:<INPUT name="SENT_RECD_DT" type="datetime-local" />
 						</div>
 						&nbsp;FCC&nbsp;CALLSIGN:<INPUT name="CALLSIGN"  style="text-transform:uppercase;" />
 						&nbsp;TACTICAL&nbsp;CALLSIGN:<INPUT name="TACTICAL" style="text-transform:uppercase;"/>
@@ -212,7 +158,7 @@
 				<tr>
 					<td colspan="6" class="CELL CELL_SMALL">
 						<div style="margin-bottom:6px;">
-							SENT/REC'D&nbsp;DATE/TIME:<INPUT name="REPLY_DATE_TIME" type="datetime-local" />
+							SENT/REC'D&nbsp;DATE/TIME:<INPUT name="REPLY_DT" type="datetime-local" />
 						</div>
 						&nbsp;FCC&nbsp;CALLSIGN:<INPUT name="REPLY_CALLSIGN" style="text-transform:uppercase;" />
 						&nbsp;TACTICAL&nbsp;CALLSIGN:<INPUT name="REPLY_TACTICAL" style="text-transform:uppercase;" />

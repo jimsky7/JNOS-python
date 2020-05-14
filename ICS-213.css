@@ -1,0 +1,52 @@
+/* ICS-213.css */
+.ICS_213 {
+	color: 				#303030;
+	font-family: 		sans-serif;
+}
+.ICS_213A {
+	color:	purple;
+}
+.HEADER_1 {
+	background-color:	#D0D0D0;
+	width: 				100%;
+	border: 			thin; 
+	border-width: 		1px;
+	margin-bottom: 		4px;
+	font-weight: 		bold;
+}
+.HEADER_2 {
+	background-color:	#D0D0D0;
+	width: 				100%;
+	border: 			thin; 
+	border-width: 		1px;
+	margin-bottom: 		4px;
+}
+.CELL {
+	padding: 			5px;
+}
+.CELL_WIDE, .INPUT_WIDE {
+	width: 				100%;
+}
+.CELL_SMALL, .INPUT_SMALL {
+	font-size: 			8pt;
+}
+.CELL_BORDER, .INPUT_BORDER {
+	border-bottom: 		solid; 
+	border-bottom-width:1px;
+}
+.CHECKBOXES {
+	font-size: 			8pt;
+}
+.INPUT_TEXT {
+}
+.INPUT_TEXTAREA {
+	background-color:	lightblue;
+}
+.HIGHLIGHT {
+	background-color:	lightblue;
+}
+.SUBMIT_BUTTON {
+	background-color: 	lightblue;
+	color:				darkblue;
+	font-weight:		bold;
+}
