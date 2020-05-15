@@ -61,18 +61,28 @@ function makePacket() {
 	try {
 		var pto = document.getElementsByName('PACKET_TO')[0].value;
 		var act = document.getElementById('FORM_213').action;
+		var m = '';
+		var r = '';
+		var subject = '';
+		var body = '';
+		var err = '';
+
+		if (pto.length == 0) {
+			err = err + "'Packet message to' is highly recommended. ";
+		}
 
 		/* build subject */
-		var subject = '';
 		try {
 			subject = document.getElementsByName('SUBJECT')[0].value;
 			subject = subject.trim();
 		}
 		catch {
 		}
+		if (subject.length == 0) {
+			err = err + "'Subject' is recommended. ";
+		}
 
 		/* build body */
-		var body = '';
 		body = aName(body, 'TO');
 		body = aName(body, 'TO_LOCATION');
 		body = aName(body, 'FROM');
@@ -97,29 +107,34 @@ function makePacket() {
 		body = aName(body, 'PRIORITY');
 		body = aName(body, 'REPLY_REQUIRED');
 
-		body = aStr (body, SEPARATOR);
-		body = aStr (body, 'MESSAGE:');
-		/* the message needs LF replaced by %0A */
-		var m = document.getElementsByName('MESSAGE')[0].value.replace(/\n/g, '%0A');
-		body = aStr (body, m);
-
-		if (ALL || anyInputs(['SIGNATURE', 'POSITION', 'SENT_RECD_DT', 'CALLSIGN', 'TACTICAL'])) {
+		if (ALL || anyInputs(['MESSAGE', 'SIGNATURE', 'POSITION', 'SENT_RECD_DT', 'CALLSIGN', 'TACTICAL'])) {
 			body = aStr (body, SEPARATOR);
-			body = aName(body, 'SIGNATURE');
-			body = aName(body, 'POSITION');
-			body = aName(body, 'SENT_RECD_DT');
-			body = aName(body, 'CALLSIGN');
-			body = aName(body, 'TACTICAL');
+			body = aStr (body, 'MESSAGE:');
+			/* the message needs LF replaced by %0A */
+			m = document.getElementsByName('MESSAGE')[0].value.replace(/\n/g, '%0A');
+			body = aStr (body, m);
+			if (m.length > 1000) {
+				err = err + "This message is rather long for packet radio. ";
+			}
+
+			if (ALL || anyInputs(['SIGNATURE', 'POSITION', 'SENT_RECD_DT', 'CALLSIGN', 'TACTICAL'])) {
+				body = aStr (body, SEPARATOR);
+				body = aName(body, 'SIGNATURE');
+				body = aName(body, 'POSITION');
+				body = aName(body, 'SENT_RECD_DT');
+				body = aName(body, 'CALLSIGN');
+				body = aName(body, 'TACTICAL');
+			}
 		}
 
 		if (ALL || anyInputs(['REPLY', 'REF_MSG_NUMBER', 'REPLY_SIGNATURE', 'REPLY_POSITION', 'REPLY_DT', 'REPLY_CALLSIGN', 'REPLY_TACTICAL'])) {
 			body = aStr (body, SEPARATOR);
-			body = aStr (body, 'REPLY:');
 			body = aName(body, 'REF_MSG_NUMBER');
+			body = aStr (body, 'REPLY:');
 
 			/* the message needs LF replaced by %0A */
-			var m = document.getElementsByName('REPLY')[0].value.replace(/\n/g, '%0A');
-			body = aStr (body, m);
+			var r = document.getElementsByName('REPLY')[0].value.replace(/\n/g, '%0A');
+			body = aStr (body, r);
 
 			if (ALL || anyInputs(['REPLY_SIGNATURE', 'REPLY_POSITION', 'REPLY_DT', 'REPLY_CALLSIGN', 'REPLY_TACTICAL'])) {
 				body = aStr (body, SEPARATOR);
@@ -131,7 +146,17 @@ function makePacket() {
 			}
 		}
 
+		if (m.length == 0 && r.length == 0) {
+			err = err + "\n\nYou did not include a message or a reply! ";
+		}
+
+		body = aStr (body, SEPARATOR);
+
 		document.getElementById('FORM_213').action = 'mailto:<'+pto+'>?subject='+subject+'&body='+body;
+		if (err.length) {
+			err = err + '\n\nChoose \'Cancel\' to go back and fix this, or \'OK\' to open your mail program and continue.';
+			return confirm(err);
+		}
 		return true;
 	}
 	catch (err) {
