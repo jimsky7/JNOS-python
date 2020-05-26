@@ -5,7 +5,7 @@
 		<script type="text/javascript" src="ICS-213.js"></script>
 	</head>
 	<body>
-		<FORM class="ICS_213" id="FORM_213" action="mailto:aa6ax@aa6ax" 
+		<FORM class="ICS_213" id="FORM_213" name="FORM_213" action="mailto:aa6ax@aa6ax" 
 				method="POST"
 				onsubmit="return makePacket();"
 		>
@@ -56,7 +56,7 @@
 					</td>
 					<td colspan="4" class="CELL CELL_BORDER">
  							<span class="CELL_SMALL ICS_213A">(213A)&nbsp;</span>
-							<INPUT type="radio" name="ORIGINAL_OR_REPLY" value="Original" checked>&nbsp;Original
+							<INPUT type="radio" name="ORIGINAL_OR_REPLY" value="Original" checked="checked">&nbsp;Original
 							<INPUT type="radio" name="ORIGINAL_OR_REPLY" value="Reply"           >&nbsp;Reply 
 					</td>
 				</tr>
@@ -87,11 +87,11 @@
 							<div style="display:inline-block;">
 								<INPUT type="radio"    name="PRIORITY" value="Emergency"    >&nbsp;EMERGENCY
 								<INPUT type="radio" name="PRIORITY" value="Priority"        >&nbsp;PRIORITY 
-								<INPUT type="radio" name="PRIORITY" value="Routine"  checked>&nbsp;ROUTINE
+								<INPUT type="radio" name="PRIORITY" value="Routine"  checked="checked">&nbsp;ROUTINE
 							</div>
 							<div style="display:inline-block;">
 								<INPUT type="radio" name="REPLY_REQUIRED" value="Required"            >&nbsp;REPLY&nbsp;REQUIRED
-								<INPUT type="radio" name="REPLY_REQUIRED" value="Not Required" checked>&nbsp;REPLY&nbsp;NOT&nbsp;NEEDED 
+								<INPUT type="radio" name="REPLY_REQUIRED" value="Not Required" checked="checked">&nbsp;REPLY&nbsp;NOT&nbsp;NEEDED 
 							</div>
 					</td>
 					<td>DATE:<br/><INPUT type="date" name="DATE" /></td>

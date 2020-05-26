@@ -91,7 +91,7 @@ function makePacket() {
 		body = aStr (body, SEPARATOR);
 		body = aStr (body, '(213A)');
 		body = aName(body, 'SUBJECT');
-		body = aName(body, 'ORIGINAL_OR_REPLY');
+		body = body + "ORIGINAL_OR_REPLY: " + document.forms.FORM_213.ORIGINAL_OR_REPLY.value + EOL;
 		body = aChk (body, 'FIRE_OR_HAZMAT');
 		body = aChk (body, 'MEDICAL');
 		body = aChk (body, 'RESCUE');
@@ -104,8 +104,10 @@ function makePacket() {
 		body = aName(body, 'DATE');
 		body = aName(body, 'TIME');
 		body = aName(body, 'MSG_NUMBER');
-		body = aName(body, 'PRIORITY');
-		body = aName(body, 'REPLY_REQUIRED');
+
+		body = body + "PRIORITY: " + document.forms.FORM_213.PRIORITY.value + EOL;
+
+		body = body + "REPLY: " + document.forms.FORM_213.REPLY_REQUIRED.value + EOL;
 
 		if (ALL || anyInputs(['MESSAGE', 'SIGNATURE', 'POSITION', 'SENT_RECD_DT', 'CALLSIGN', 'TACTICAL'])) {
 			body = aStr (body, SEPARATOR);
