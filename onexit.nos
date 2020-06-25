@@ -1,0 +1,5 @@
+remark onexit.nos
+# remark "Turning off KISS mode on the KPC3P"
+# shell echo -e \\xc0\\xff\\xc0 > /dev/ttyUSB0
+# shell sudo echo -e \\xc0\\xff\\xc0 > /dev/ttyUSB1
+

@@ -1,0 +1,4 @@
+sudo echo jnos.exit
+# turn off KISS mode on Kantronics TNC
+# sudo echo -e \\xc0\\xff\\xc0 > /dev/ttyUSB1
+# echo Turned off KISS mode on Kantronics TNC /dev/ttyUSB1
