@@ -1,5 +1,6 @@
 """
-    Check JNOS mailbox status(es) and send an email report.
+    Check JNOS mailbox status(es) and send an email report
+        only if any box has changed.
         
     References:
         JNOS file index.h contains rough description of the .ind (index)
@@ -48,7 +49,7 @@ try:
     log = logging.getLogger(scriptName)
     log.info('========================================================')
     log.info('========================================================')
-    log.info('Begin JNOS mailbox stats.')
+    log.info('Begin JNOS mailbox checks.')
     if (DEBUG):
         print("Logging to {}".format(PATH_LOGS + scriptName + DOT_LOG))
 except PermissionError:
@@ -73,10 +74,10 @@ try:
     if (DEBUG):
         print("Spool directory is " + PATH_MAIL)
     log.debug("Spool directory is " + PATH_MAIL)
-    s =  BBSname + "\r\n"
-    s += ds + "\r\n\r\n"
-    s += "Area           Count  New\r\n"
-    s += "=========================\r\n"
+    s1 = BBSname + "\r\n"
+    s2 = ds + "\r\n\r\n"
+    s3 = "Area           Count  New\r\n"
+    s3 += "=========================\r\n"
     for fdn in dir:
         if (fdn.lower().endswith(DOT_IND.lower())):
             try:
@@ -86,74 +87,98 @@ try:
                 if (cp.isOpen()):
                     rc  = cp.getRecordCount()
                     rrc = cp.getReadRecordCount()
-                    s += a.ljust(15, " ")
-                    s += str(rc).rjust(5, " ")
-                    s += str(rrc).rjust(5, " ")
-                    s+= "\r\n"
+                    s3 += a.ljust(15, " ")
+                    s3 += str(rc).rjust(5, " ")
+                    s3 += str(rrc).rjust(5, " ")
+                    s3 += "\r\n"
                     areasReported = areasReported + 1
             except:
                 if (DEBUG):
                     print("Failed " + fdn)
                 log.debug("Failed " + fdn)
-    s += "=========================\r\n"
+    s3 += "=========================\r\n"
     sender = '\r\nSent by: ' + scriptName
-    s += sender
-    print(s)
-    log.info(s)
-    body = s
+    body = s1 + s2 + s3 + sender
+    print(body)
+    log.info(body)
 except:
     print("Could not open " + PATH_MAIL)
-    exit(0)
+    raise ExitNow
     
 try:
     if (areasReported):
-        # Connect to the SMTP server (remote)
-
+        # Was there any change?
+        sfn = '_' + scriptName + DOT_TXT
+        stbody = ''
         try:
-            if (mxSMTPSSL):
-                cs = smtplib.SMTP_SSL(mxSMTP, 465, None, None, None, 30)
-            else:
-                cs = smtplib.SMTP(mxSMTP, 25)
-            cs.helo(sysID)
-            # cs.login(user, pw)
-        except SMTPAuthenticationError:
-            print('SMTPAuthenticationError')
+            st = open(PATH_MAIL + sfn, 'r')
+            stbody = st.read(-1)
+            st.close()
         except:
-            print('Exception when connecting for outbound SMTP')
-            raise ExitNow
-
-    moo = email.message.Message()
-    moo.add_header('To', statTo)
-    moo.add_header('From', statFrom)
-    moo.add_header('Subject', statSubject)
-    moo.add_header('Date', ds)
-    headers = ""
-    headers += "To: {}\r\n".format(statTo)
-    headers += "From: {}\r\n".format(statFrom)
-    headers += "Subject: {}\r\n".format(statSubject)
-    headers += "Date: {}\r\n".format(ds)
-    moo.set_type('text/html')
-    moo.set_payload(str("<PRE>\r\n\r\n" + body + "</PRE>"))
-    
-    if LIVE:
+            stbody = ''
         try:
-            cs.send_message(moo)
-            print("Report mailed to {}".format(statTo))
-            log.info("Report mailed to {}".format(statTo))
-        except smtplib.SMTPRecipientsRefused:
-            print("Recipient refused {}".format(statTo))
-            log.info("Recipient refused {}".format(statTo))
-    else:
-        print("TEST ONLY: Report was not mailed to {}".format(statTo))
-        log.info("TEST ONLY: Report was not mailed to {}".format(statTo))
-    cs.quit()
+            st = open(PATH_MAIL + sfn, 'w')
+        except:
+            traceback.print_tb(sys.exc_info()[2])
+            print('Exception: {} {}'.format(sys.exc_info()[0], sys.exc_info()[1]))
+            raise ExitNow
+        s4 = s3.replace('\r','')
+        s4 = s4.replace('\n','')
+        st.write(s4)
+        st.close()
+            
+        if (stbody != s4):
+            # Connect to the SMTP server (remote)
+            # Send message indicating that counts have changed
+            body = s1 + s2 + 'Counts have changed!\r\n\r\n' + s3 + sender
+            try:
+                if (mxSMTPSSL):
+                    cs = smtplib.SMTP_SSL(mxSMTP, 465, None, None, None, 30)
+                else:
+                    cs = smtplib.SMTP(mxSMTP, 25)
+                cs.helo(sysID)
+                # cs.login(user, pw)
+            except SMTPAuthenticationError:
+                print('SMTPAuthenticationError')
+            except:
+                print('Exception when connecting for outbound SMTP')
+                raise ExitNow
+
+            moo = email.message.Message()
+            moo.add_header('To', statTo)
+            moo.add_header('From', statFrom)
+            moo.add_header('Subject', statSubject)
+            moo.add_header('Date', ds)
+            headers = ""
+            headers += "To: {}\r\n".format(statTo)
+            headers += "From: {}\r\n".format(statFrom)
+            headers += "Subject: {}\r\n".format(statSubject)
+            headers += "Date: {}\r\n".format(ds)
+            moo.set_type('text/html')
+            moo.set_payload(str("<PRE>\r\n\r\n" + body + "</PRE>"))
+    
+            if LIVE:
+                try:
+                    cs.send_message(moo)
+                    print("Report mailed to {}".format(statTo))
+                    log.info("Report mailed to {}".format(statTo))
+                except smtplib.SMTPRecipientsRefused:
+                    print("Recipient refused {}".format(statTo))
+                    log.info("Recipient refused {}".format(statTo))
+            else:
+                print("TEST ONLY: Report was not mailed to {}".format(statTo))
+                log.info("TEST ONLY: Report was not mailed to {}".format(statTo))
+
+            cs.quit()
+        else:
+            print("No change. Report was not sent.")
 
 except ExitNow:
     print('Exiting')
-except:    
+except:
     traceback.print_tb(sys.exc_info()[2])
     print('Exception: {} {}'.format(sys.exc_info()[0], sys.exc_info()[1]))
-
+    
 print('========================================================')
 log.info('========================================================')
 
