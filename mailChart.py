@@ -19,7 +19,7 @@
 
 print('========================================================')
 
-import logging, os, sys, time
+import logging, os, sys, time, traceback, io
 from mailConfig import *
 from logging import *
 
@@ -36,6 +36,9 @@ def bucketName(y, m, d, h):
         mm = "0" + mm
     yy = str(y)
     return yy + "-" + mm + "-" + dd + " " + hh
+
+class ExitNow(Exception):
+    pass
 
 BBS_CALLSIGN_STR = ""
 PATH_LOGS   = '/Users/sky/Dropbox/aa6ax/Packet_radio/Python/jnos/logs/'
@@ -110,10 +113,15 @@ except:
 
 
 try:
-    fh = open(filename, "r")
-    fo = open(scriptName + DOT_CSV, "w")
-    foh= open(scriptName + "-buckets" + DOT_CSV, "w")
-    fog= open(chartfilename, "w")
+    try:
+        fh = open(filename, "r")
+        fo = open(scriptName + DOT_CSV, "w")
+        foh= open(scriptName + "-buckets" + DOT_CSV, "w")
+        fog= open(chartfilename, "w")
+    except:
+        traceback.print_tb(sys.exc_info()[2])
+        print('Exception: {} {}'.format(sys.exc_info()[0], sys.exc_info()[1]))
+        raise ExitNow
     n = limit
     i = 0
     byteCount = "bytes"
@@ -245,6 +253,10 @@ try:
             if (DEBUG):
                 print("EOF")
             break;
+        except:
+            print('Exception: {} {} {}'.format(sys.exc_info()[0], sys.exc_info()[1],  sys.exc_info()[2]))
+            tbo = sys.exc_info()[2]
+            traceback.print_tb(tbo)
             
     # Write Google Charts code
     print("Write Google Chart code")
@@ -300,10 +312,11 @@ try:
     fh.close()
     fo.close()
     fog.close()
+except ExitNow:
+    print('Exiting')
 except:
-    ss = 'Can\'t open {}.'.format(filename)
-    print(ss)
-
+    traceback.print_tb(sys.exc_info()[2])
+    print('Exception: {} {}'.format(sys.exc_info()[0], sys.exc_info()[1]))
 # ====================================================================================        
 # ====================================================================================
       
@@ -311,8 +324,6 @@ print(             'All done.')
 logging.info(BCS + 'All done.')
 print(             '========================================================')
 logging.info(BCS + '========================================================')
-
-
 
 
 
