@@ -140,11 +140,15 @@ try:
     callsignssilentcount = {}
     sw = FALSE
     rec = {"date":"date", "time_struct":"time_struct", "seconds":"unixtime", "ax25":"FROM->TO"}
+    packetLine1 = ""
+    packetLine2 = ""
+    packetLine3 = ""
+    
     print("Limit: {} lines".format(n))
     while (n > 0 and len(buckets) < bucketLimit):
         try:
             s = fh.readline()
-            n = n-1
+            n = n - 1
             i = i + 1
             # EOF is indicated by empty string
             if (s==""):
@@ -152,14 +156,23 @@ try:
                     print("EOF")
                 break
             # If blank line, then prepare for start of new data packet
-            if (s=="\n"):
+            if (s == "\n"):
+                # Remember the position of the first line in new packet
+                bookmark = fh.tell()
+                # Process accumulated data for the previous packet
+                # When sw is TRUE we are reading data lines until we hit
+                #   a blank line.
                 sw = TRUE
                 # print(rec)
                 ts = rec["time_struct"]
                 if (rec["seconds"]=="unixtime"):
                     ts = "year","month","day","hour","minute","second"
                 cs = rec["ax25"].split("->")
+                
                 if (i>1):
+                    # Check for edgy error condition
+                    if (len(cs)==1):
+                        cs.append('ERROR')
                     # cs[0] is the transmitting callsign
                     try:
                         callsigns[cs[0]] = callsigns[cs[0]] + byteCount
@@ -216,6 +229,7 @@ try:
                 continue
             # First non-empty line in a packet
             if (len(s)>0 and sw):
+                packetLine1 = s.replace("\n", "")
                 # First line after a blank is the date indicator
                 sd = s.split(" - ")
                 # sd[0] is the date+time
@@ -230,14 +244,25 @@ try:
                 rec["seconds"] = stm
                 # Read next line, throw away (KISS...)
                 s = fh.readline()
+                packetLine2 = s.replace("\n", "")
                 # Read AX25 line
                 s = fh.readline()
+                packetLine3 = s.replace("\n", "")
                 if (s.startswith("AX25:")):
                     sc = s.split(" ")
                     # "AX25:","call info","other info"
                     rec['ax25'] = sc[1]
-                    # print(sc[1])
-                sw = FALSE
+ 
+                    cs = rec["ax25"].split("->")
+                    
+                    if (len(cs)==0) or ((len(cs) == 1) and (('\r' in cs[0]) or (cs[0] == ''))) or ((len(cs) > 1) and (('\r' in cs[0]) or ('\r' in cs[1]) or (cs[0] == '') or (cs[1] == ''))):
+                        rec['ax25'] = "ERROR->ERROR"
+                        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\nBad from->to near line {}. \nPacket will be attributed to "ERROR".'.format(i))
+                        print('\t'+packetLine1)
+                        print('\t'+packetLine2)
+                        print('\t'+packetLine3)
+                                    
+            sw = FALSE
             # While reading a data packet, count up the bytes
             if (len(s)>1):
                 sx = s.split(" ", 18)
@@ -249,10 +274,6 @@ try:
                     byteCount = byteCount + lsx18
                     bucketCount = bucketCount + lsx18
 
-        except io.EOF:
-            if (DEBUG):
-                print("EOF")
-            break;
         except:
             print('Exception: {} {} {}'.format(sys.exc_info()[0], sys.exc_info()[1],  sys.exc_info()[2]))
             tbo = sys.exc_info()[2]
