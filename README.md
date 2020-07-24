@@ -132,6 +132,70 @@ Works a lot like "outpost PMM" in that it can reach out and fetch incoming BBS m
 
 
 ####################################################################################
+mailStat.py
+
+"""
+    Check JNOS mailbox status(es) and send an email report.
+        
+    References:
+        JNOS file index.h contains rough description of the .ind (index)
+            and .txt (email repository) files.
+        Basic SMTP
+            https://docs.python.org/3/library/smtplib.html
+        Structured email messages
+            https://docs.python.org/3/library/email.message.html?highlight=emailmessage#email.message.EmailMessage
+            https://docs.python.org/3/library/email.message.html
+    Hints:
+       If this is run by cron, it must run as 'root'
+        0 */4 * * * sudo python3 /PATH/SCRIPT_NAME.py
+"""
+
+This script just looks at whether a mailbox has messages, and how many of those are new
+or unread, and prepares and sends an email with a summary.
+
+It can be run by cron, and it will send a report even if nothing changes.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+SAMPLE EMAIL REPORT:
+
+	AA6AX [JNOS BBS]
+	Fri Jun 26 09:00:01 2020
+
+	Area           Count  New
+	=========================
+	aa6ax              7    2
+	kd8drx             1    1
+	kg6qdj             1    1
+	ki6rye             2    2
+	kj6ldj             1    1
+	kj6ptx             4    4
+	kn6eok             2    1
+	w6oak              5    5
+	wb6yru             1    1
+	=========================
+
+	Sent by: mailStat
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+####################################################################################
+mailCheck.py
+
+This script is cloned from mailStat.py. It builds a list of mailboxes with the
+number of messages and number of new messages, then if anything has changed in that
+list, it sends an email.
+
+This one can be run as frequently as you like, and it will only send mail when
+something changes (e.g. a new message has arrived for any BBS user), so it's handy
+as an alert mechanism so you can kind of forget the packet station is running and
+you don't have to be checking your mail very often. Just check when you get an
+alert.
+
+The contents of the email are similar to those sent by mailStat.
+
+
+####################################################################################
 ####################################################################################
 ####################################################################################
 ####################################################################################
@@ -277,6 +341,26 @@ Checks mailbox status(es) as reflected in .ind and .txt files and then sends an 
        If this is run by cron, it must run as 'root'
         0 */4 * * * sudo python3 /PATH/SCRIPT_NAME.py
 """
+
+####################################################################################
+jnos.exit
+onexit.nos
+
+These files contain code that, if activated, returne a Kantronics KPC3 Plus TNC
+to the normal operating mode after it has been in KISS mode for use by JNOS.
+
+jnos.exit is automatically run as a shell script following JNOS termination. (I don't
+know what 'automatically' means. Maiko told me.) Presumably even after a JNOS crash
+this will run. Might be run by  startup script?
+
+onexit.nos is JNOS commands that JNOS will run during its 'exit' process. So if there's
+an orderly JNOS shutdown, these are run.
+
+autoexec.nos must contain appropriate 'comm' commands to put the KPC3P into its KISS
+mode.
+
+
+
 
 
 
