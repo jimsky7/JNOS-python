@@ -20,7 +20,7 @@
 # LIVE = TRUE
 # DEBUG = FALSE
 
-print('========================================================')
+print("========================================================")
 
 import email, smtplib, os.path, logging, datetime, traceback
 from os import path
@@ -35,6 +35,8 @@ class ExitNow(Exception):
 ds = str(datetime.datetime.now().ctime())
 statSubject = BBSname + ' ' + ds
 
+DEBUG = TRUE
+
 # ====================================================================================
 # Set up logging
 scriptPath, scriptName = os.path.split(__file__)
@@ -47,22 +49,22 @@ try:
     logFormat = '%(asctime)-15s %(message)s'
     logging.basicConfig(filename=(PATH_LOGS + scriptName + DOT_LOG), level=logLevel, format=logFormat)
     log = logging.getLogger(scriptName)
-    log.info('========================================================')
-    log.info('========================================================')
-    log.info('Begin JNOS mailbox checks.')
+    log.info("========================================================")
+    log.info("========================================================")
+    log.info("Begin JNOS mailbox checks.")
     if (DEBUG):
         print("Logging to {}".format(PATH_LOGS + scriptName + DOT_LOG))
 except PermissionError:
-    print("Can't open or create a log file due to permissions violation.")
+    print(      "Can't open or create a log file due to permissions violation.")
     log.warning("Can't open or create a log file due to permissions violation.")
 except:
-    print("Can't open or create a log file.")
+    print(      "Can't open or create a log file.")
     log.warning("Can't open or create a log file.")
     # NOTE: Continue even if no log was set up.
 
 if (not LIVE):
-    print('TEST ONLY. No messages will be sent.')
-    log.info('TEST ONLY. No messages will be sent.')
+    print(   "TEST ONLY. No messages will be sent.")
+    log.info("TEST ONLY. No messages will be sent.")
    
 # Loop thru the internal (JNOS) areas/users
 # Each one consists of an index file USER.ind and email repository USER.txt
@@ -73,15 +75,17 @@ try:
     dir.sort()
     if (DEBUG):
         print("Spool directory is " + PATH_MAIL)
-    log.debug("Spool directory is " + PATH_MAIL)
+        log.debug("Spool directory is " + PATH_MAIL)
     s1 = BBSname + "\r\n"
     s2 = ds + "\r\n\r\n"
-    s3 = "Area           Count  New\r\n"
+    s3 =  "Area           Count  New\r\n"
     s3 += "=========================\r\n"
     for fdn in dir:
+        if (fdn.startswith("_") or fdn.startswith(".")):
+            continue
         if (fdn.lower().endswith(DOT_IND.lower())):
             try:
-                log.debug('Checking {}'.format(fdn))
+                log.debug("Checking {}".format(fdn))
                 a = fdn.rstrip(DOT_IND)
                 cp = JNOSarea(a, PATH_MAIL, log)
                 if (cp.isOpen()):
@@ -97,40 +101,44 @@ try:
                     print("Failed " + fdn)
                 log.debug("Failed " + fdn)
     s3 += "=========================\r\n"
-    sender = '\r\nSent by: ' + scriptName
+    sender = "\r\nSent by: " + scriptName
     body = s1 + s2 + s3 + sender
     print(body)
     log.info(body)
 except:
-    print("Could not open " + PATH_MAIL)
+    print(       "Could not open " + PATH_MAIL)
+    log.critical("Could not open " + PATH_MAIL)
     raise ExitNow
     
 try:
     if (areasReported):
+        print(    "{} areas were examined.".format(areasReported))
+        log.debug("{} areas were examined.".format(areasReported))
         # Was there any change?
-        sfn = '_' + scriptName + DOT_TXT
-        stbody = ''
+        sfn = "_" + scriptName + DOT_TXT
+        stbody = ""
         try:
-            st = open(PATH_MAIL + sfn, 'r')
+            st = open(PATH_MAIL + sfn, "r")
             stbody = st.read(-1)
             st.close()
         except:
-            stbody = ''
+            stbody = ""
         try:
-            st = open(PATH_MAIL + sfn, 'w')
+            st = open(PATH_MAIL + sfn, "w")
         except:
             traceback.print_tb(sys.exc_info()[2])
-            print('Exception: {} {}'.format(sys.exc_info()[0], sys.exc_info()[1]))
+            print(       "Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+            log.critical("Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
             raise ExitNow
-        s4 = s3.replace('\r','')
-        s4 = s4.replace('\n','')
+        s4 = s3.replace("\r","")
+        s4 = s4.replace("\n","")
         st.write(s4)
         st.close()
             
         if (stbody != s4):
             # Connect to the SMTP server (remote)
             # Send message indicating that counts have changed
-            body = s1 + s2 + 'Counts have changed!\r\n\r\n' + s3 + sender
+            body = s1 + s2 + "Counts have changed!\r\n\r\n" + s3 + sender
             try:
                 if (mxSMTPSSL):
                     cs = smtplib.SMTP_SSL(mxSMTP, 465, None, None, None, 30)
@@ -138,47 +146,52 @@ try:
                     cs = smtplib.SMTP(mxSMTP, 25)
                 cs.helo(sysID)
                 # cs.login(user, pw)
-            except SMTPAuthenticationError:
-                print('SMTPAuthenticationError')
             except:
-                print('Exception when connecting for outbound SMTP')
+                traceback.print_tb(sys.exc_info()[2])
+                print(       "Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+                log.critical("Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
                 raise ExitNow
 
             moo = email.message.Message()
-            moo.add_header('To', statTo)
-            moo.add_header('From', statFrom)
-            moo.add_header('Subject', statSubject)
-            moo.add_header('Date', ds)
+            moo.add_header("To", statTo)
+            moo.add_header("From", statFrom)
+            moo.add_header("Subject", statSubject)
+            moo.add_header("Date", ds)
             headers = ""
             headers += "To: {}\r\n".format(statTo)
             headers += "From: {}\r\n".format(statFrom)
             headers += "Subject: {}\r\n".format(statSubject)
             headers += "Date: {}\r\n".format(ds)
-            moo.set_type('text/html')
+            moo.set_type("text/html")
             moo.set_payload(str("<PRE>\r\n\r\n" + body + "</PRE>"))
     
             if LIVE:
                 try:
                     cs.send_message(moo)
-                    print("Report mailed to {}".format(statTo))
+                    print(   "Report mailed to {}".format(statTo))
                     log.info("Report mailed to {}".format(statTo))
-                except smtplib.SMTPRecipientsRefused:
-                    print("Recipient refused {}".format(statTo))
-                    log.info("Recipient refused {}".format(statTo))
+                except:
+                    traceback.print_tb(sys.exc_info()[2])
+                    print(       "Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+                    log.critical("Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+                    raise ExitNow
             else:
-                print("TEST ONLY: Report was not mailed to {}".format(statTo))
+                print(   "TEST ONLY: Report was not mailed to {}".format(statTo))
                 log.info("TEST ONLY: Report was not mailed to {}".format(statTo))
 
             cs.quit()
         else:
-            print("No change. Report was not sent.")
+            print(   "No change. Report was not sent.")
+            log.info("No change. Report was not sent.")
 
 except ExitNow:
-    print('Exiting')
+    print(       "Exiting now.")
+    log.critical("Exiting now.")
 except:
     traceback.print_tb(sys.exc_info()[2])
-    print('Exception: {} {}'.format(sys.exc_info()[0], sys.exc_info()[1]))
+    print(       "Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+    log.critical("Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
     
-print('========================================================')
-log.info('========================================================')
+print(   "========================================================")
+log.info("========================================================")
 
