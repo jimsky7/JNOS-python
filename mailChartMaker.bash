@@ -24,7 +24,7 @@ scp -p -i /Users/sky/.ssh/id_rsa pi@skypi4.local:/jnos/logs/vhf.log logs/vhf.log
 echo
 echo =====================================================================
 echo Process the log to create javascript data
-python scripts/mailChart.py logs/vhf.log logs/mailChart-charts.txt logs/mailChart.log AA6AX 20000000 1200
+python scripts/mailChart.py logs/vhf.log logs/mailChart-charts.txt logs/mailChart.log AA6AX 200000000 10000
 
 # Write processed chart inserts to aa6ax.us
 echo 
