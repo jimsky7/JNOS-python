@@ -24,15 +24,25 @@ print('========================================================')
 import email, smtplib, os.path, logging, datetime, traceback
 from os import path
 from datetime import time
+from time import localtime
 from mailConfig import *
 from mailJNOS import *
 from traceback import *
 
 class ExitNow(Exception):
     pass
-
-ds = str(datetime.datetime.now().ctime())
+    
+dn = datetime.datetime.now()
+dntz  = int(localtime().tm_gmtoff/36)
+if (dntz<0):
+    dntz = "-{:>04}".format(abs(dntz))
+else:
+    dntz = "{:>04}".format(dntz)
+ds = str(dn.strftime("%a, %d %b %Y %H:%M:%S " + dntz))
 statSubject = BBSname + ' ' + ds
+# Note: statFrom contains an email address, including '@' and the @ is
+#   required in order to construct a valid message ID (per RFC 2822)
+statMID     = str(datetime.datetime.now().strftime("%d%m%Y%H%M%S_"+statFrom.strip("<>")))
 
 # ====================================================================================
 # Set up logging
@@ -112,41 +122,39 @@ try:
         try:
             if (mxSMTPSSL):
                 cs = smtplib.SMTP_SSL(mxSMTP, 465, None, None, None, 30)
+                #    cs.set_debuglevel(1)
             else:
                 cs = smtplib.SMTP(mxSMTP, 25)
-            cs.helo(sysID)
-            # cs.login(user, pw)
-        except SMTPAuthenticationError:
-            print('SMTPAuthenticationError')
+            cs.ehlo_or_helo_if_needed()
+            cs.login(user, pw)
         except:
-            print('Exception when connecting for outbound SMTP')
+            traceback.print_tb(sys.exc_info()[2])
+            print(       "Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+            log.critical("Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
             raise ExitNow
 
-    moo = email.message.Message()
-    moo.add_header('To', statTo)
-    moo.add_header('From', statFrom)
-    moo.add_header('Subject', statSubject)
-    moo.add_header('Date', ds)
-    headers = ""
-    headers += "To: {}\r\n".format(statTo)
-    headers += "From: {}\r\n".format(statFrom)
-    headers += "Subject: {}\r\n".format(statSubject)
-    headers += "Date: {}\r\n".format(ds)
-    moo.set_type('text/html')
-    moo.set_payload(str("<PRE>\r\n\r\n" + body + "</PRE>"))
+        moo = email.message.Message()
+        moo.add_header("To",      statTo)
+        moo.add_header("From",    statFrom)
+        moo.add_header("Subject", statSubject)
+        moo.add_header("Date",    ds)
+        moo.add_header("Message-ID", "<" + statMID + ">")
+        moo.add_header("User-Agent", "JNOS-AA6AX")
+        moo.set_type('text/plain')
+        moo.set_payload(str(body))
     
-    if LIVE:
-        try:
-            cs.send_message(moo)
-            print("Report mailed to {}".format(statTo))
-            log.info("Report mailed to {}".format(statTo))
-        except smtplib.SMTPRecipientsRefused:
-            print("Recipient refused {}".format(statTo))
-            log.info("Recipient refused {}".format(statTo))
-    else:
-        print("TEST ONLY: Report was not mailed to {}".format(statTo))
-        log.info("TEST ONLY: Report was not mailed to {}".format(statTo))
-    cs.quit()
+        if LIVE:
+            try:
+                cs.send_message(moo)
+                print(   "Report mailed to {}".format(statTo))
+                log.info("Report mailed to {}".format(statTo))
+            except smtplib.SMTPRecipientsRefused:
+                print(   "Recipient refused {}".format(statTo))
+                log.info("Recipient refused {}".format(statTo))
+        else:
+            print(   "TEST ONLY: Report was not mailed to {}".format(statTo))
+            log.info("TEST ONLY: Report was not mailed to {}".format(statTo))
+        cs.quit()
 
 except ExitNow:
     print('Exiting')

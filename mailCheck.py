@@ -25,15 +25,34 @@ print("========================================================")
 import email, smtplib, os.path, logging, datetime, traceback
 from os import path
 from datetime import time
+from time import localtime
 from mailConfig import *
 from mailJNOS import *
 from traceback import *
+# from datetime import timezone, tzinfo
 
 class ExitNow(Exception):
     pass
 
-ds = str(datetime.datetime.now().ctime())
-statSubject = BBSname + ' ' + ds
+dn = datetime.datetime.now()
+dntz  = int(localtime().tm_gmtoff / 36)
+if (dntz < 0):
+    dntz = "-{:>04}".format(abs(dntz))
+else:
+    dntz = "{:>04}".format(dntz)
+ds = str(dn.strftime("%a, %d %b %Y %H:%M:%S " + dntz))
+
+# Choice of simple or fancy subject line
+simpleSubject = BBSname + " " + ds
+fancySubject  = "=?UTF-8?Q?" + BBSname + " =E2=9D=8C " + ds + "?="
+statSubject   = fancySubject
+
+# Subject: =?UTF-8?Q?Work_From_Home=3F_=E2=9D=8C_Work_From_Omni=3F?=
+# =?UTF-8?Q?_=E2=9C=94=EF=B8=8F?=
+ 
+# Note: statFrom contains an email address, including '@' and the @ is
+#   required in order to construct a valid message ID (per RFC 2822)
+statMID     = str(datetime.datetime.now().strftime("%d%m%Y%H%M%S_"+statFrom.strip("<>")))
 
 DEBUG = TRUE
 
@@ -139,13 +158,15 @@ try:
             # Connect to the SMTP server (remote)
             # Send message indicating that counts have changed
             body = s1 + s2 + "Counts have changed!\r\n\r\n" + s3 + sender
+
             try:
                 if (mxSMTPSSL):
                     cs = smtplib.SMTP_SSL(mxSMTP, 465, None, None, None, 30)
+                    #    cs.set_debuglevel(1)
                 else:
                     cs = smtplib.SMTP(mxSMTP, 25)
-                cs.helo(sysID)
-                # cs.login(user, pw)
+                cs.ehlo_or_helo_if_needed()
+                cs.login(user, pw)
             except:
                 traceback.print_tb(sys.exc_info()[2])
                 print(       "Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
@@ -153,17 +174,14 @@ try:
                 raise ExitNow
 
             moo = email.message.Message()
-            moo.add_header("To", statTo)
-            moo.add_header("From", statFrom)
+            moo.add_header("To",      statTo)
+            moo.add_header("From",    statFrom)
             moo.add_header("Subject", statSubject)
-            moo.add_header("Date", ds)
-            headers = ""
-            headers += "To: {}\r\n".format(statTo)
-            headers += "From: {}\r\n".format(statFrom)
-            headers += "Subject: {}\r\n".format(statSubject)
-            headers += "Date: {}\r\n".format(ds)
-            moo.set_type("text/html")
-            moo.set_payload(str("<PRE>\r\n\r\n" + body + "</PRE>"))
+            moo.add_header("Date",    ds)
+            moo.add_header("Message-ID", "<" + statMID + ">")
+            moo.add_header("User-Agent", "JNOS-AA6AX")
+            moo.set_type('text/plain')
+            moo.set_payload(str(body))
     
             if LIVE:
                 try:

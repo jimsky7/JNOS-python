@@ -31,6 +31,9 @@ import email, smtplib, telnetlib, logging, os, sys
 from mailConfig import *
 from telnetlib import Telnet
 
+class ExitNow(Exception):
+    pass
+
 # ====================================================================================
 # General items
 # If set, these will override mailConfig.py settings
@@ -73,7 +76,8 @@ def checkCommon(stchk, ctchk, cschk, logchk, bcs):
         #   End telnet JNOS session
         ctchk.close()
         #   End SMTP JNOS session
-        cschk.quit()
+        if (cschk != None):
+            cschk.quit()
 
         logchk.info(bcs+'All done.')
         print('All done.')
@@ -81,6 +85,32 @@ def checkCommon(stchk, ctchk, cschk, logchk, bcs):
         logchk.debug(bcs+'========================================================')
         exit(0)
     return
+
+cs = None
+
+def openSMTP(cso):
+    # ====================================================================================
+    # Connect to JNOS SMTP.
+    # This is where messages are delivered to the JNOS mailbox(es)
+
+    # SMTP already open?
+    if (cso != None):
+        return cso
+    
+    # Open the SMTP connection now
+    try:
+        if (localSMTPSSL):
+            cso = smtplib.SMTP_SSL(localSMTP, 465, None, None, None, 30)
+        else:
+            cso = smtplib.SMTP(localSMTP, 25)
+        cso.helo(sysID)
+    except:
+        print('Unable to establish an SMTP connection to JNOS.')
+        print('Is JNOS running?')
+        log.critical(BCS+'Unable to establish an SMTP connection to JNOS!')
+        log.critical(BCS+'Is JNOS running?')
+        exit(0)
+    return cso
 
 #   Get these from ARGV[]
 ls = len(sys.argv)
@@ -176,29 +206,6 @@ sbd = sb.decode()
 print(sbd)
 log.info(BCS + sbd)
 ct.write(sb + TELNET_EOL)
-
-# ====================================================================================
-# Connect to JNOS SMTP.
-# This is where messages are delivered to the JNOS mailbox(es)
-
-try:
-    if (localSMTPSSL):
-        cs = smtplib.SMTP_SSL(localSMTP, 465, None, None, None, 30)
-    else:
-        cs = smtplib.SMTP(localSMTP, 25)
-    cs.helo(sysID)
-    # NOTE: No login. Gateway must accept us by open relay or IP address
-    # cs.login('pi@aa6ax.us', 'Nowhere-4')
-# except SMTPHeloError:
-#     print('SMTPHeloError')
-# except SMTPAuthenticationError:
-#     print('SMTPAuthenticationError')
-except:
-    print('Unable to establish an SMTP connection to JNOS.')
-    print('Is JNOS running?')
-    log.critical(BCS+'Unable to establish an SMTP connection to JNOS!')
-    log.critical(BCS+'Is JNOS running?')
-    exit(0)
 
 # ====================================================================================
 # INCOMING messages?
@@ -446,7 +453,7 @@ for msgn in mnlist:
         print("Body above >>>>>>")
         print(        '--------------------------------------------------------')
         log.debug(BCS+'--------------------------------------------------------')
-
+    
     moo = email.message.Message()
     moo.set_type('text/plain')
     for ih in mailHeaders.keys():
@@ -463,6 +470,7 @@ for msgn in mnlist:
         log.info(BCS+"Subject: {}".format(mailHeaders['Subject']))
         log.info(BCS+"Date: {}".format(mailHeaders['Date']))
         try:
+            cs = openSMTP(cs)
             cs.send_message(moo)
             sentOK = TRUE
         except:
@@ -511,7 +519,8 @@ except EOFError:
       
 #   End telnet JNOS session
 ct.close()
-cs.quit()
+if (cs != None):
+    cs.quit()
 
 log.info(BCS+'All done.')
 print(       'All done.')
