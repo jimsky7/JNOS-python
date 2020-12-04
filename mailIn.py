@@ -241,6 +241,9 @@ for i in mnlist:
     
     # Transform the 'To:' header if an account is present
     to = mailHeaders["To"]
+    # Strip quotes and blanks leading and trailing on the 'to' header
+    # Don't know exactly which, but some mailers allow them.
+    to = to.strip("\"' ")
 
     log.debug("Analyzing To: {}".format(to))
     # May be of the form "area@BBS" <email>
