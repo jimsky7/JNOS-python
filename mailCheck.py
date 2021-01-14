@@ -85,6 +85,20 @@ if (not LIVE):
     print(   "TEST ONLY. No messages will be sent.")
     log.info("TEST ONLY. No messages will be sent.")
    
+# Check whether JNOS is running
+JNOSSMTPstatus = "JNOS is running."
+forceMail = FALSE
+try:
+    cso = smtplib.SMTP(localSMTP, 25)
+    cso.helo(sysID)
+    print(JNOSSMTPstatus)
+    log.critical("JNOS is running.")
+except:
+    log.critical("Unable to establish an SMTP connection to JNOS!")
+    JNOSSMTPstatus = "WARNING: JNOS is not running."
+    print(JNOSSMTPstatus)
+    forceMail = TRUE
+    
 # Loop thru the internal (JNOS) areas/users
 # Each one consists of an index file USER.ind and email repository USER.txt
 
@@ -95,7 +109,7 @@ try:
     if (DEBUG):
         print("Spool directory is " + PATH_MAIL)
         log.debug("Spool directory is " + PATH_MAIL)
-    s1 = BBSname + "\r\n"
+    s1 = BBSname + "\r\n" + JNOSSMTPstatus + "\r\n"
     s2 = ds + "\r\n\r\n"
     s3 =  "Area           Count  New\r\n"
     s3 += "=========================\r\n"
@@ -119,7 +133,8 @@ try:
                 if (DEBUG):
                     print("Failed " + fdn)
                 log.debug("Failed " + fdn)
-    s3 += "=========================\r\n"
+    s3 += "=========================\r\n\r\n"
+    s3 += JNOSSMTPstatus + "\r\n"
     sender = "\r\nSent by: " + scriptName
     body = s1 + s2 + s3 + sender
     print(body)
@@ -129,12 +144,12 @@ except:
     log.critical("Could not open " + PATH_MAIL)
     raise ExitNow
     
+sfn = "_" + scriptName + DOT_TXT
 try:
     if (areasReported):
         print(    "{} areas were examined.".format(areasReported))
         log.debug("{} areas were examined.".format(areasReported))
         # Was there any change?
-        sfn = "_" + scriptName + DOT_TXT
         stbody = ""
         try:
             st = open(PATH_MAIL + sfn, "r")
@@ -142,6 +157,7 @@ try:
             st.close()
         except:
             stbody = ""
+            forceMail = TRUE
         try:
             st = open(PATH_MAIL + sfn, "w")
         except:
@@ -154,10 +170,10 @@ try:
         st.write(s4)
         st.close()
             
-        if (stbody != s4):
+        if ((stbody != s4) or forceMail):
             # Connect to the SMTP server (remote)
             # Send message indicating that counts have changed
-            body = s1 + s2 + "Counts have changed!\r\n\r\n" + s3 + sender
+            body = s1 + s2 + "Conditions have changed!\r\n\r\n" + s3 + sender
 
             try:
                 if (mxSMTPSSL):
@@ -171,6 +187,16 @@ try:
                 traceback.print_tb(sys.exc_info()[2])
                 print(       "Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
                 log.critical("Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+                # If could not send message, it could be due to a temporary
+                #   failure in DNS or routing or timeout.
+                # Deleting the 'memory' file ensures the script will
+                #   attempt to send a message the next time it runs.
+                try:
+                    os.remove(PATH_MAIL + sfn)
+                except:
+                    print(       "Failed to remove " + PATH_MAIL + sfn)
+                    log.critical("Failed to remove " + PATH_MAIL + sfn)
+                # Now exit with stack trace
                 raise ExitNow
 
             moo = email.message.Message()
@@ -192,6 +218,16 @@ try:
                     traceback.print_tb(sys.exc_info()[2])
                     print(       "Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
                     log.critical("Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+                    # If could not send message, it could be due to a temporary
+                    #   failure in DNS or routing or timeout.
+                    # Deleting the 'memory' file ensures the script will
+                    #   attempt to send a message the next time it runs.
+                    try:
+                        os.remove(PATH_MAIL + sfn)
+                    except:
+                        print(       "Failed to remove " + PATH_MAIL + sfn)
+                        log.critical("Failed to remove " + PATH_MAIL + sfn)
+                    # Now exit with stack trace
                     raise ExitNow
             else:
                 print(   "TEST ONLY: Report was not mailed to {}".format(statTo))
@@ -199,8 +235,8 @@ try:
 
             cs.quit()
         else:
-            print(   "No change. Report was not sent.")
-            log.info("No change. Report was not sent.")
+            print(   "No change. Report was not mailed.")
+            log.info("No change. Report was not mailed.")
 
 except ExitNow:
     print(       "Exiting now.")
