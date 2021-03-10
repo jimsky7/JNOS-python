@@ -43,8 +43,9 @@ else:
 ds = str(dn.strftime("%a, %d %b %Y %H:%M:%S " + dntz))
 
 # Choice of simple or fancy subject line
+# Note the fancy UTF-style line is broken in two so as to avoid 75-limit
 simpleSubject = BBSname + " " + ds
-fancySubject  = "=?UTF-8?Q?" + BBSname + " =E2=9D=8C " + ds + "?="
+fancySubject  = "=?UTF-8?Q?" + BBSname + " =E2=9D=8C?=\r\n =?UTF-8?Q? " + ds + "?="
 statSubject   = fancySubject
 
 # Subject: =?UTF-8?Q?Work_From_Home=3F_=E2=9D=8C_Work_From_Omni=3F?=
