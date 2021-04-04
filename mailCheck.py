@@ -22,7 +22,7 @@
 
 print("========================================================")
 
-import email, smtplib, os.path, logging, datetime, traceback
+import email, smtplib, os.path, logging, datetime, traceback, socket
 from os import path
 from datetime import time
 from time import localtime
@@ -45,7 +45,7 @@ ds = str(dn.strftime("%a, %d %b %Y %H:%M:%S " + dntz))
 # Choice of simple or fancy subject line
 # Note the fancy UTF-style line is broken in two so as to avoid 75-limit
 simpleSubject = BBSname + " " + ds
-fancySubject  = "=?UTF-8?Q?" + BBSname + " =E2=9D=8C?=\r\n =?UTF-8?Q? " + ds + "?="
+fancySubject  = "=?UTF-8?Q?" + BBSname + " =E2=9D=8C?=\r\n " + ds
 statSubject   = fancySubject
 
 # Subject: =?UTF-8?Q?Work_From_Home=3F_=E2=9D=8C_Work_From_Omni=3F?=
@@ -99,7 +99,13 @@ except:
     JNOSSMTPstatus = "WARNING: JNOS is not running."
     print(JNOSSMTPstatus)
     forceMail = TRUE
-    
+
+hostName = socket.gethostname()
+ipAddress = socket.gethostbyname(hostName+".local")
+ipAddressMsg = "{} Local IP address is {}\r\n".format(hostName, ipAddress)
+print(    ipAddressMsg)
+log.debug(ipAddressMsg)
+ 
 # Loop thru the internal (JNOS) areas/users
 # Each one consists of an index file USER.ind and email repository USER.txt
 
@@ -137,7 +143,7 @@ try:
     s3 += "=========================\r\n\r\n"
     s3 += JNOSSMTPstatus + "\r\n"
     sender = "\r\nSent by: " + scriptName
-    body = s1 + s2 + s3 + sender
+    body = s1 + s2 + s3 + ipAddressMsg + sender
     print(body)
     log.info(body)
 except:
@@ -174,7 +180,7 @@ try:
         if ((stbody != s4) or forceMail):
             # Connect to the SMTP server (remote)
             # Send message indicating that counts have changed
-            body = s1 + s2 + "Conditions have changed!\r\n\r\n" + s3 + sender
+            body = s1 + s2 + "Conditions have changed!\r\n\r\n" + s3 + ipAddressMsg + sender
 
             try:
                 if (mxSMTPSSL):
@@ -185,6 +191,8 @@ try:
                 cs.ehlo_or_helo_if_needed()
                 cs.login(user, pw)
             except:
+                print(       "Could not connect to {}\r\n".format(mxSMTP))
+                log.critical("Could not connect to {}\r\n".format(mxSMTP))
                 traceback.print_tb(sys.exc_info()[2])
                 print(       "Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
                 log.critical("Exception: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
