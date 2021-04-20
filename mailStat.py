@@ -21,7 +21,7 @@
 
 print('========================================================')
 
-import email, smtplib, os.path, logging, datetime, traceback
+import email, smtplib, os.path, logging, datetime, traceback, socket
 from os import path
 from datetime import time
 from time import localtime
@@ -73,6 +73,12 @@ if (not LIVE):
     print('TEST ONLY. No messages will be sent.')
     log.info('TEST ONLY. No messages will be sent.')
    
+hostName = socket.gethostname()
+ipAddress = socket.gethostbyname(hostName+".local")
+ipAddressMsg = "{} Local IP address is {}\r\n".format(hostName, ipAddress)
+print(    ipAddressMsg)
+log.debug(ipAddressMsg)
+
 # Loop thru the internal (JNOS) areas/users
 # Each one consists of an index file USER.ind and email repository USER.txt
 
@@ -106,8 +112,10 @@ try:
                     print("Failed " + fdn)
                 log.debug("Failed " + fdn)
     s += "=========================\r\n"
-    sender = '\r\nSent by: ' + scriptName
+    s += '\r\n' + ipAddressMsg
+    sender = '\r\nSent by ' + scriptName
     s += sender
+    s += '\r\nUsing ' + mxSMTP
     print(s)
     log.info(s)
     body = s

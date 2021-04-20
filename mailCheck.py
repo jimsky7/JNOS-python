@@ -143,7 +143,8 @@ try:
     s3 += "=========================\r\n\r\n"
     s3 += JNOSSMTPstatus + "\r\n"
     sender = "\r\nSent by: " + scriptName
-    body = s1 + s2 + s3 + ipAddressMsg + sender
+    using  = "\r\nUsing " + mxSMTP
+    body = s1 + s2 + s3 + ipAddressMsg + sender + using
     print(body)
     log.info(body)
 except:
