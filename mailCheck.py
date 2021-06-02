@@ -22,9 +22,9 @@
 
 print("========================================================")
 
-import email, smtplib, os.path, logging, datetime, traceback, socket
-from os import path
-from datetime import time
+import email, smtplib, os.path, logging, datetime, traceback, socket, psutil
+# from os import path
+# from datetime import time
 from time import localtime
 from mailConfig import *
 from mailJNOS import *
@@ -89,15 +89,35 @@ if (not LIVE):
 # Check whether JNOS is running
 JNOSSMTPstatus = "JNOS is running."
 forceMail = FALSE
-try:
-    cso = smtplib.SMTP(localSMTP, 25)
-    cso.helo(sysID)
-    print(JNOSSMTPstatus)
-    log.critical("JNOS is running.")
-except:
-    log.critical("Unable to establish an SMTP connection to JNOS!")
+JNOSprocID = 0
+
+# Double check for JNOS process
+for p in psutil.process_iter():
+    try:
+        pinfo = p.as_dict(attrs=['pid', 'name'])
+        if 'jnos'.lower() in pinfo['name'].lower():
+            JNOSprocID = pinfo['pid']
+            if DEBUG:
+                print('JNOS is running (PID {}) {}'.format(JNOSprocID, pinfo['name']))
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        pass
+    
+if JNOSprocID > 0:
+    # In addition, check that SMTP is available
+    try:
+        cso = smtplib.SMTP(localSMTP, 25)
+        cso.helo(sysID)
+        print(JNOSSMTPstatus)
+        log.critical("JNOS is running.")
+    except:
+        log.critical("Unable to establish an SMTP connection to JNOS!")
+        JNOSSMTPstatus = "Unable to establish an SMTP connection to JNOS!"
+        print(JNOSSMTPstatus)
+        forceMail = TRUE
+else:
     JNOSSMTPstatus = "WARNING: JNOS is not running."
     print(JNOSSMTPstatus)
+    log.critical(JNOSSMTPstatus)
     forceMail = TRUE
 
 hostName = socket.gethostname()
