@@ -15,10 +15,6 @@
         0 */4 * * * sudo python3 /PATH/SCRIPT_NAME.py
 """
 
-# ====================================================================================
-# Change these to override mailConfig.py settings
-# LIVE = TRUE
-# DEBUG = FALSE
 
 print("========================================================")
 
@@ -33,6 +29,11 @@ from traceback import *
 
 class ExitNow(Exception):
     pass
+
+# ====================================================================================
+# Change these to override mailConfig.py settings
+# LIVE = TRUE
+# DEBUG = FALSE
 
 dn = datetime.datetime.now()
 dntz  = int(localtime().tm_gmtoff / 36)
