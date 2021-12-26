@@ -41,7 +41,6 @@ DOT_IND        = '.ind'
 DOT_TXT        = '.txt'
 DOT_LOG        = '.log'
 DOT_USR        = '.usr'
-DOT_CSV        = '.csv'
 
 # PATH (requires ending /)
 PATH_JNOS     = '/jnos/'
@@ -52,7 +51,7 @@ PATH_MAIL     = '/jnos/spool/mail/'
 area           = 'internet_out'
 inetArea       = 'internet_out'
 # For mail-stat
-replyTo        = 'pi@aa6ax.us'
+replyTo        = '<pi@aa6ax.us>'
 statTo         = '<sky@aa6ax.us>'
 statFrom       = '<sky@aa6ax.us>'
 
@@ -97,6 +96,8 @@ BBS_PROMPT_N    = b'>\n'
 BBS_PROMPT_N_STR= BBS_PROMPT_R.decode()
 BBS_PROMPT_ARY   = b']>\r'
 BBS_PROMPT_ARY_STR= BBS_PROMPT_ARY.decode()
+BBS_PROMPT_KPC   = b', or Help >\r'
+BBS_PROMPT_KPC_STR= BBS_PROMPT_KPC.decode()
 BBS_WAIT        = 180
 
 # ====================================================================================
@@ -114,3 +115,7 @@ localSMTPSSL  = FALSE
 
 headersToKeep = ['Date', 'Subject', 'To', 'From']
 
+# Remote node to test in order to verify connectivity
+NODE_CHECK_HOST = "n6saf-oak-lhg5xl.local.mesh"
+NODE_CHECK_URL  = "/cgi-bin/status"
+NODE_CHECK_PORT= 8080
