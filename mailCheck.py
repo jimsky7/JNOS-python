@@ -96,9 +96,9 @@ uptimeString = ""
 bootTime = psutil.boot_time()
 fh = open('/proc/uptime', 'r')
 uptime = float(fh.readline().split()[0])
-uptimeThreshold = 60*10
+uptimeThreshold = 60*5
 if (uptime < uptimeThreshold):
-    uptimeString = "System rebooted {} minutes ago.".format(int(uptime/60))
+    uptimeString = "System restarted {} minutes ago.\r\n".format(int(uptime/60))
     forceMail = TRUE
 if DEBUG:
     print("Uptime is {} seconds.".format(int(uptime)))
