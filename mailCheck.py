@@ -1,6 +1,6 @@
 """
     Check JNOS mailbox status(es) and send an email report
-        only if any box has changed.
+        only if any important condition has changed.
         
     References:
         JNOS file index.h contains rough description of the .ind (index)
@@ -87,10 +87,24 @@ except:
 if (not LIVE):
     print(   "TEST ONLY. No messages will be sent.")
     log.info("TEST ONLY. No messages will be sent.")
-   
+
+forceMail = FALSE
+
+# Check unexpected reboots
+# uptimeString = "Uptime is {}".format(time.CLOCK_UPTIME)
+uptimeString = ""
+bootTime = psutil.boot_time()
+fh = open('/proc/uptime', 'r')
+uptime = float(fh.readline().split()[0])
+uptimeThreshold = 60*10
+if (uptime < uptimeThreshold):
+    uptimeString = "System rebooted {} minutes ago.".format(int(uptime/60))
+    forceMail = TRUE
+if DEBUG:
+    print("Uptime is {} seconds.".format(int(uptime)))
+    
 # Check whether JNOS is running
 JNOSSMTPstatus = "JNOS is running."
-forceMail = FALSE
 JNOSprocID = 0
 
 # Double check for JNOS process
@@ -98,7 +112,7 @@ for p in psutil.process_iter():
     try:
         pinfo = p.as_dict(attrs=['pid', 'name'])
         if 'jnos'.lower() in pinfo['name'].lower():
-            JNOSprocID = pinfo['pid']
+            JNOSprocID = int(pinfo['pid'])
             if DEBUG:
                 print('JNOS is running (PID {}) {}'.format(JNOSprocID, pinfo['name']))
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
@@ -122,6 +136,33 @@ else:
     log.critical(JNOSSMTPstatus)
     forceMail = TRUE
 
+# Has JNOS recently re-launched?
+JNOSpidCheck = ""
+if JNOSprocID > 0:
+    oldJNOSprocID = 0
+    # Read last-known JNOS PID from file
+    try:
+        f = open(MAILCHECK_JNOS_PID_FILE, "r")
+        oldJNOSprocID = int(f.read())
+        f.close()
+    except:
+        print(      "Cannot open mailCheck-JNOS PID file: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+        log.warning("Cannot open mailCheck-JNOS PID file: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+    
+    # Write current PID to file
+    if JNOSprocID != oldJNOSprocID:
+        forceMail = TRUE
+        try:
+            f = open(MAILCHECK_JNOS_PID_FILE, "w")
+            f.write(str(JNOSprocID))
+            f.close()
+            JNOSpidCheck = "\r\nJNOS has recently restarted.\r\nNew PID: {} Old: {}\r\n\r\n".format(JNOSprocID, oldJNOSprocID)
+            print(             "JNOS has recently restarted.\r\nNew PID: {} Old: {}".format(JNOSprocID, oldJNOSprocID))
+            log.critical(      "JNOS has recently restarted.\r\nNew PID: {} Old: {}".format(JNOSprocID, oldJNOSprocID))
+        except:
+            print(       "Exception writing JNOS PID file: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+            log.critical("Exception writing JNOS PID file: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+        
 hostName = socket.gethostname()
 ipAddress = socket.gethostbyname(hostName+".local")
 ipAddressMsg = "{} Local IP address is {}\r\n".format(hostName, ipAddress)
@@ -223,7 +264,7 @@ try:
         if ((stbody != s4) or forceMail):
             # Connect to the SMTP server (remote)
             # Send message indicating that counts have changed
-            body = s1 + s2 + "Conditions have changed!\r\n\r\n" + s3 + ipAddressMsg + sender
+            body = s1 + s2 + "Conditions have changed!\r\n\r\n" + s3 + JNOSpidCheck + uptimeString + ipAddressMsg + sender
 
             try:
                 if (mxSMTPSSL):
