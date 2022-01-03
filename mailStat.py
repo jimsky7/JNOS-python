@@ -21,13 +21,14 @@
 
 print('========================================================')
 
-import email, smtplib, os.path, logging, datetime, traceback, socket
+import email, smtplib, os.path, logging, datetime, traceback, socket, http
 from os import path
 from datetime import time
 from time import localtime
 from mailConfig import *
 from mailJNOS import *
 from traceback import *
+from http import client
 
 class ExitNow(Exception):
     pass
@@ -79,6 +80,25 @@ ipAddressMsg = "{} Local IP address is {}\r\n".format(hostName, ipAddress)
 print(    ipAddressMsg)
 log.debug(ipAddressMsg)
 
+# Check one remote node to be sure we are still connected
+try:
+    nodeCheckMsg = ""
+    if NODE_CHECK_HOST != "":
+        h = http.client.HTTPConnection(NODE_CHECK_HOST, NODE_CHECK_PORT, timeout=30)
+        h.request("GET", NODE_CHECK_URL)
+        hc = h.getresponse()
+        if hc.status != 200:
+            nodeCheckMsg = '\r\nFAILED > Remote node: Status {} "{}" from {}'.format(hc.status, hc.reason, NODE_CHECK_HOST)
+        else:
+            nodeCheckMsg = 'Remote node: Status {} "{}" from {}'.format(hc.status, hc.reason, NODE_CHECK_HOST)
+        h.close()
+except:
+    forceMail = TRUE
+    nodeCheckMsg =  "\r\nFAILED > Remote node: Cannot reach {}{}\r\n".format(NODE_CHECK_HOST, NODE_CHECK_URL)
+    nodeCheckMsg += "Exception: {} {}\r\n".format(sys.exc_info()[0], sys.exc_info()[1])
+    print (      nodeCheckMsg)
+    log.critical(nodeCheckMsg)
+    
 # Loop thru the internal (JNOS) areas/users
 # Each one consists of an index file USER.ind and email repository USER.txt
 
@@ -112,6 +132,7 @@ try:
                     print("Failed " + fdn)
                 log.debug("Failed " + fdn)
     s += "=========================\r\n"
+    s += '\r\n' + nodeCheckMsg
     s += '\r\n' + ipAddressMsg
     sender = '\r\nSent by ' + scriptName
     s += sender

@@ -119,3 +119,5 @@ headersToKeep = ['Date', 'Subject', 'To', 'From']
 NODE_CHECK_HOST = "n6saf-oak-lhg5xl.local.mesh"
 NODE_CHECK_URL  = "/cgi-bin/status"
 NODE_CHECK_PORT= 8080
+
+MAILCHECK_JNOS_PID_FILE = "/jnos/mailCheck-JNOS.pid"
