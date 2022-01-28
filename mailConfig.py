@@ -41,6 +41,7 @@ DOT_IND        = '.ind'
 DOT_TXT        = '.txt'
 DOT_LOG        = '.log'
 DOT_USR        = '.usr'
+DOT_CSV        = '.csv'
 
 # PATH (requires ending /)
 PATH_JNOS     = '/jnos/'
