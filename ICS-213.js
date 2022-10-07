@@ -114,11 +114,11 @@ function makePacket() {
 			body = aStr (body, 'MESSAGE:');
 			/* the message needs LF replaced by %0A */
 			m = document.getElementsByName('MESSAGE')[0].value.replace(/\n/g, '%0A');
-			body = aStr (body, m);
+			body = aStr (body, m + EOL);
 			if (m.length > 1000) {
 				err = err + "This message is rather long for packet radio. ";
 			}
-
+			
 			if (ALL || anyInputs(['SIGNATURE', 'POSITION', 'SENT_RECD_DT', 'CALLSIGN', 'TACTICAL'])) {
 				body = aStr (body, SEPARATOR);
 				body = aName(body, 'SIGNATURE');
@@ -134,9 +134,9 @@ function makePacket() {
 			body = aName(body, 'REF_MSG_NUMBER');
 			body = aStr (body, 'REPLY:');
 
-			/* the message needs LF replaced by %0A */
+			/* the reply needs LF replaced by %0A */
 			var r = document.getElementsByName('REPLY')[0].value.replace(/\n/g, '%0A');
-			body = aStr (body, r);
+			body = aStr (body, r + EOL);
 
 			if (ALL || anyInputs(['REPLY_SIGNATURE', 'REPLY_POSITION', 'REPLY_DT', 'REPLY_CALLSIGN', 'REPLY_TACTICAL'])) {
 				body = aStr (body, SEPARATOR);
